@@ -43,9 +43,11 @@ Minggu Ke;Periode;Nama Dokter;Poli / Subspesialis;SENIN;SELASA;RABU;KAMIS;JUMAT;
 
 ### Master default dan pengganti
 
-Di lokal, aplikasi memakai `data/JADWAL DOKTER RS AN-NISA (HFIS) update 23-10-2026.xlsx` jika tersedia. Upload master baru menggantikan default untuk sesi tersebut; file default tidak ditimpa.
+Di lokal dan Streamlit Cloud, aplikasi memakai `data/JADWAL DOKTER RS AN-NISA (HFIS) update 23-10-2026.xlsx` sebagai master default. File HFIS ini disertakan di GitHub atas persetujuan pemilik proyek. Upload master baru menggantikan default untuk sesi tersebut; file default di repository tidak ditimpa.
 
-Folder `data` dan semua Excel mentah tetap diabaikan Git. Karena master HFIS tidak dipublikasikan ke repository, di Streamlit Cloud pengguna perlu mengunggah master. Unggahan diproses dalam memori dan tidak sengaja diarsipkan ke disk. Setelah sesi berakhir atau server restart, pengguna perlu mengunggah kembali. Batasi akses aplikasi hanya untuk pengguna yang berwenang.
+Kredensial, template berisi data, dan file lain di folder `data` tetap diabaikan Git. Hanya file HFIS default tersebut yang dikecualikan. Unggahan pengganti diproses dalam memori, tidak diarsipkan ke disk, dan tidak dipush ke GitHub secara otomatis. Setelah sesi berakhir atau server restart, aplikasi kembali memakai master default. Batasi akses aplikasi hanya untuk pengguna yang berwenang.
+
+Untuk mengganti default secara permanen, ganti isi file HFIS pada path yang sama, lalu commit dan push. Jika nama file juga diubah, sesuaikan path pada `default_schedule()` di `recap.py` dan pengecualian pada `.gitignore`. Master hasil upload tidak mengubah rekap lama di Sheets secara otomatis; impor tetap hanya menambahkan baris baru.
 
 Master yang baru harus mempertahankan riwayat perubahan yang diperlukan untuk tanggal data yang diproses. Jadwal yang tidak ada tidak boleh ditebak dari template rekap.
 
