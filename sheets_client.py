@@ -50,4 +50,9 @@ def append_rows(worksheet: gspread.Worksheet, frame: pd.DataFrame) -> None:
 
 
 def write_header(worksheet: gspread.Worksheet, headers: list[str]) -> None:
+    existing = worksheet.row_values(1)
+    if existing:
+        if existing != headers:
+            raise ImportValidationError("Header Google Sheets berubah. Tidak ada header yang ditulis.")
+        return
     worksheet.append_row(headers, value_input_option="RAW")
