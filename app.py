@@ -49,6 +49,10 @@ def make_preview(uploaded_file) -> None:
 st.title("Rekap kepatuhan dokter")
 st.write("Unggah Excel kumulatif. Aplikasi hanya menambahkan baris yang belum ada di Google Sheets.")
 
+success_message = st.session_state.pop("import_success", None)
+if success_message:
+    st.success(success_message)
+
 uploaded_file = st.file_uploader(
     "File Excel rekap mingguan",
     type=["xlsx"],
@@ -114,9 +118,9 @@ if st.button("Tambahkan data", type="primary", use_container_width=True):
         if not verified.new_rows.empty:
             st.error("Penulisan belum dapat diverifikasi sepenuhnya. Jangan klik ulang, periksa Google Sheets terlebih dahulu.")
         else:
-            st.success(f"{len(latest_comparison.new_rows)} baris berhasil ditambahkan dan diverifikasi.")
-            st.link_button("Buka Google Sheets", sheet_url)
+            st.session_state.import_success = f"{len(latest_comparison.new_rows)} baris berhasil ditambahkan dan diverifikasi."
             reset_preview()
+            st.rerun()
     except ImportValidationError as exc:
         st.error(str(exc))
     except Exception:

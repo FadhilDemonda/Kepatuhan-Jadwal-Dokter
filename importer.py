@@ -64,7 +64,13 @@ def _time_to_text(value: Any) -> str:
             seconds = round(float(value) * 24 * 60 * 60)
             seconds %= 24 * 60 * 60
             return f"{seconds // 3600:02d}:{(seconds % 3600) // 60:02d}:{seconds % 60:02d}"
-    return str(value).strip()
+    text = str(value).strip()
+    clock = re.fullmatch(r"(\d{1,2}):(\d{2})(?::(\d{2}))?", text)
+    if clock:
+        hours, minutes, seconds = (int(part or 0) for part in clock.groups())
+        if hours < 24 and minutes < 60 and seconds < 60:
+            return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    return text
 
 
 def serialise_value(column: str, value: Any) -> str:
@@ -153,7 +159,11 @@ def compare_frames(source: pd.DataFrame, destination: pd.DataFrame) -> ImportCom
         destination_row = destination_by_key.get(key)
         if destination_row is None:
             new_indexes.append(index)
-        elif all(_normalise_text(row[column]) == _normalise_text(destination_row[column]) for column in source.columns):
+        elif all(
+            _normalise_text(serialise_value(column, row[column]))
+            == _normalise_text(serialise_value(column, destination_row[column]))
+            for column in source.columns
+        ):
             existing_count += 1
         else:
             conflicts.append({

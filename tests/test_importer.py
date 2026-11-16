@@ -44,6 +44,39 @@ class ImporterTest(unittest.TestCase):
         with self.assertRaisesRegex(ImportValidationError, "Kunci ganda"):
             validate_and_serialise(frame)
 
+    def test_sheets_time_display_format_is_not_a_conflict(self):
+        for excel_time, sheets_time in [
+            ("12:00:00", "12:00"),
+            ("09:05:00", "9:05"),
+            ("09:05:30", "9:05:30"),
+        ]:
+            with self.subTest(excel_time=excel_time, sheets_time=sheets_time):
+                source = source_frame().astype(object)
+                source.loc[0, "SENIN TASK 4"] = excel_time
+                source = validate_and_serialise(source)
+                destination = source.copy()
+                destination.loc[0, "SENIN TASK 4"] = sheets_time
+                comparison = compare_frames(source, destination)
+                self.assertEqual(comparison.existing_count, 1)
+                self.assertTrue(comparison.conflicts.empty)
+                self.assertTrue(comparison.new_rows.empty)
+
+    def test_different_seconds_remain_a_conflict(self):
+        source = validate_and_serialise(source_frame())
+        destination = source.copy()
+        destination.loc[0, "SENIN TASK 4"] = "12:00:01"
+        comparison = compare_frames(source, destination)
+        self.assertEqual(len(comparison.conflicts), 1)
+        self.assertEqual(comparison.existing_count, 0)
+
+    def test_missing_time_marker_is_not_the_same_as_blank(self):
+        source = validate_and_serialise(source_frame())
+        source.loc[0, "SENIN TASK 4"] = "-"
+        destination = source.copy()
+        destination.loc[0, "SENIN TASK 4"] = ""
+        comparison = compare_frames(source, destination)
+        self.assertEqual(len(comparison.conflicts), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
